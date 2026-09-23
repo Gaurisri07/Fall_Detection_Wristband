@@ -31,15 +31,17 @@ bool buttonPressed(Button& button) {
     const bool reading = digitalRead(button.pin);
     const unsigned long now = millis();
 
-    if (reading != button.lastReading) {
-        button.lastReading = reading;
-        button.lastChangeMs = now;
-    }
-
-    if (now - button.lastChangeMs >= BUTTON_DEBOUNCE_MS &&
-        reading != button.stableReading) {
-        button.stableReading = reading;
-        return reading == LOW;
+    if (reading == LOW && button.stableReading == HIGH) {
+        if (now - button.lastChangeMs >= 20) {
+            button.stableReading = LOW;
+            button.lastChangeMs = now;
+            return true;
+        }
+    } else if (reading == HIGH && button.stableReading == LOW) {
+        if (now - button.lastChangeMs >= 20) {
+            button.stableReading = HIGH;
+            button.lastChangeMs = now;
+        }
     }
 
     return false;
@@ -95,9 +97,9 @@ void setup() {
     digitalWrite(ALERT_LED_PIN, LOW);
     noTone(BUZZER_PIN);
 
-    cancelButton.lastReading = cancelButton.stableReading = digitalRead(CANCEL_BUTTON_PIN);
-    sosButton.lastReading = sosButton.stableReading = digitalRead(SOS_BUTTON_PIN);
-    cancelButton.lastChangeMs = sosButton.lastChangeMs = millis();
+    cancelButton.stableReading = HIGH;
+    sosButton.stableReading = HIGH;
+    cancelButton.lastChangeMs = sosButton.lastChangeMs = 0;
 
     Serial.println("Fall Detection Wristband - interactive Wokwi demo");
     Serial.println("STATUS LED is ON. SOS sends an alert; CANCEL silences it.");
