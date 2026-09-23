@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "author": "Person C — Location & Communication",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-neo6m",
+      "id": "gps1",
+      "top": -120,
+      "left": 220,
+      "attrs": {
+        "gpxFile": ""
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_status",
+      "top": 100,
+      "left": 330,
+      "attrs": { "color": "green", "label": "STATUS" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_alert",
+      "top": 140,
+      "left": 330,
+      "attrs": { "color": "red", "label": "ALERT" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_cancel",
+      "top": 200,
+      "left": 280,
+      "attrs": { "color": "green", "label": "CANCEL" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn_sos",
+      "top": 240,
+      "left": 280,
+      "attrs": { "color": "red", "label": "SOS" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buz1",
+      "top": 180,
+      "left": 380,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "gps1:TX", "esp:RX2", "green", [] ],
+    [ "gps1:RX", "esp:TX2", "yellow", [] ],
+    [ "gps1:VCC", "esp:3V3", "red", [] ],
+    [ "gps1:GND", "esp:GND.1", "black", [] ],
+
+    [ "led_status:A", "esp:19", "green", [] ],
+    [ "led_status:K", "esp:GND.2", "black", [] ],
+
+    [ "led_alert:A", "esp:18", "red", [] ],
+    [ "led_alert:K", "esp:GND.2", "black", [] ],
+
+    [ "btn_cancel:1.l", "esp:13", "blue", [] ],
+    [ "btn_cancel:2.l", "esp:GND.2", "black", [] ],
+
+    [ "btn_sos:1.l", "esp:12", "orange", [] ],
+    [ "btn_sos:2.l", "esp:GND.2", "black", [] ],
+
+    [ "buz1:1", "esp:21", "purple", [] ],
+    [ "buz1:2", "esp:GND.2", "black", [] ]
+  ],
+  "serialMonitor": {
+    "display": "always",
+    "newline": "lf"
+  }
+}

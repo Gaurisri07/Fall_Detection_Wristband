@@ -1,0 +1,159 @@
+# Person C — Demo Script
+# Read this before your presentation. Follow step by step.
+# ─────────────────────────────────────────────────────────────
+
+WHAT TO SAY WHEN YOU OPEN YOUR FOLDER
+──────────────────────────────────────
+"I was responsible for Person C — the Location and Communication module.
+My job was to write the GPS and GSM code for the wristband.
+I own the /comms/ folder — four files: gps_module.h, gps_module.cpp,
+gsm_module.h, and gsm_module.cpp."
+
+
+STEP 1 — SHOW THE FILE STRUCTURE (File Explorer)
+──────────────────────────────────────────────────
+Open: C:\Users\Asus\Desktop\fall-detection-wristband\
+
+Point to:
+  comms/         ← "This is my module"
+  wokwi/         ← "This is the simulation"
+  test/          ← "This is my test harness"
+  docs/          ← "This is my documentation"
+
+SAY:
+"The /comms/ folder has two sub-modules:
+  1. GPS — reads location from the NEO-6M chip using NMEA sentences
+  2. GSM — sends the alert SMS via the SIM800L modem
+
+I used a Phase 1 / Phase 2 design so the code works in Wokwi simulation
+now, and on real hardware later with just one line change."
+
+
+STEP 2 — SHOW gps_module.h (open in any text editor / VS Code)
+────────────────────────────────────────────────────────────────
+Open: comms\gps_module.h
+
+Point to:
+  - struct GpsData     ← "This is the data contract the whole team uses"
+  - gps_init()         ← "Called once in setup()"
+  - gps_update()       ← "Called every loop() — non-blocking"
+  - gps_has_fix()      ← "Person B checks this before sending the alert"
+  - gps_format_map_url() ← "Generates the Google Maps link in the SMS"
+
+SAY:
+"I wrote the full NMEA parser from scratch — no external library —
+so Wokwi simulation has zero dependencies. It handles $GPRMC and
+$GPGGA sentences, validates checksums, and converts the raw
+degrees-minutes format into decimal coordinates."
+
+
+STEP 3 — SHOW gsm_module.h (open in text editor)
+──────────────────────────────────────────────────
+Open: comms\gsm_module.h
+
+Point to:
+  - #define GSM_STUB_MODE 1    ← "Phase 1: logs to Serial instead of sending"
+  - gsm_send_alert()           ← "Person B calls this when fall is confirmed"
+  - gsm_send_sos()             ← "Person B calls this on SOS button press"
+  - #define EMERGENCY_NUMBER   ← "Change this before real deployment"
+
+SAY:
+"The stub mode means Wokwi simulation and real hardware use identical
+code. When we get real hardware, we just flip this one define to 0."
+
+
+STEP 4 — RUN THE PYTHON TESTS (most impressive part)
+──────────────────────────────────────────────────────
+Open: Command Prompt or PowerShell
+
+Type:
+  python "C:\Users\Asus\Desktop\fall-detection-wristband\test\test_comms_module.py"
+
+Wait for output. Point to the results:
+
+SAY:
+"I wrote 32 unit tests covering:
+  - NMEA checksum validation
+  - Coordinate conversion from degrees-minutes to decimal
+  - Full $GPRMC sentence parsing — latitude, longitude, time, date, speed
+  - $GPGGA parsing — satellite count, HDOP, altitude
+  - Bad sentence rejection
+  - Google Maps URL generation
+  - The exact SMS message format for both auto-alert and manual SOS
+  - GPS timeout detection logic
+
+All 32 pass."
+
+
+STEP 5 — SHOW THE WOKWI SIMULATION
+────────────────────────────────────
+Go to: https://wokwi.com
+Click: New Project → ESP32
+
+Action 1: Replace diagram.json
+  - Click the diagram tab in Wokwi
+  - Delete all content
+  - Paste contents of: wokwi\diagram.json
+
+Action 2: Replace the sketch
+  - Click main.ino / sketch tab
+  - Delete all content
+  - Paste contents of: wokwi\comms_test_standalone.ino
+
+Click ▶ Start Simulation
+
+WATCH AND SAY:
+  "The NEO-6M GPS chip is wired to Serial2 on GPIO 16.
+   The firmware reads NMEA sentences and parses them in real time."
+
+At ~2 seconds: GPS fix line appears
+  SAY: "Fix acquired — latitude and longitude are now valid."
+
+At 15 seconds: SMS box appears
+  SAY: "This is what the caregiver's phone would receive — the exact
+        message with timestamp, Google Maps link, and coordinates.
+        In Phase 1 it logs to serial. In Phase 2 it transmits via SIM800L."
+
+At 25 seconds: SOS box appears
+  SAY: "And this is the manual SOS — same format, different prefix.
+        The state machine triggers this directly when the button is pressed."
+
+
+STEP 6 — SHOW THE SAMPLE SMS OUTPUT (if teacher asks)
+──────────────────────────────────────────────────────
+Point to the serial monitor output and read it:
+
+  FALL ALERT: Wearer may have fallen.
+  Time: 12:35:19 UTC 23/09/2024
+  Location: https://maps.google.com/?q=12.850000,77.566700
+  Coordinates: 12.850000, 77.566700
+  -- FallGuard Wristband
+
+SAY:
+"The caregiver receives this SMS. They tap the link and see exactly
+where the person fell on Google Maps."
+
+
+LIKELY QUESTIONS & ANSWERS
+────────────────────────────
+
+Q: Why didn't you use TinyGPS++ or a library?
+A: "I wrote a manual parser so there are zero library dependencies in
+   the Wokwi simulation. The algorithm is also cleaner to demonstrate
+   and debug. TinyGPS++ is a direct drop-in upgrade for Phase 2 if needed."
+
+Q: What happens if there's no GPS fix?
+A: "I handle it explicitly — the SMS still sends, but the location field
+   says 'NO FIX' instead of crashing or sending 0,0. There's also a
+   35-second timeout with a flag the state machine can check."
+
+Q: How does Person B use your module?
+A: "They include my two header files and call four functions:
+   gps_init(), gsm_init() in setup, gps_update() and gsm_update()
+   every loop, and gsm_send_alert() when a fall is confirmed.
+   They don't touch anything else in /comms/."
+
+Q: How do you go from simulation to real hardware?
+A: "Change one line: #define GSM_STUB_MODE from 1 to 0.
+   The SIM800L AT command driver is already written and sitting in
+   gsm_module.cpp, just disabled by that flag."
