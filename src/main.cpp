@@ -49,6 +49,7 @@ bool buttonPressed(Button& button) {
 
 void startAlarm(const char* reason) {
     alarmActive = true;
+    Serial.println("[DEBUG] Setting Red Alert LED (Pin 18) to HIGH");
     digitalWrite(ALERT_LED_PIN, HIGH);
     tone(BUZZER_PIN, 2200);
     Serial.print("[ALERT] ");

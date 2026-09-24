@@ -61,19 +61,19 @@
     [ "gps1:VCC", "esp:3V3", "red", [] ],
     [ "gps1:GND", "esp:GND.1", "black", [] ],
 
-    [ "led_status:A", "esp:19", "green", [] ],
-    [ "led_status:K", "esp:GND.2", "black", [] ],
+    [ "led_status:A", "esp:D19", "green", [] ],
+    [ "led_status:C", "esp:GND.2", "black", [] ],
 
-    [ "led_alert:A", "esp:18", "red", [] ],
-    [ "led_alert:K", "esp:GND.2", "black", [] ],
+    [ "led_alert:A", "esp:D18", "red", [] ],
+    [ "led_alert:C", "esp:GND.2", "black", [] ],
 
-    [ "btn_cancel:1.l", "esp:13", "blue", [] ],
+    [ "btn_cancel:1.l", "esp:D13", "blue", [] ],
     [ "btn_cancel:2.l", "esp:GND.2", "black", [] ],
 
-    [ "btn_sos:1.l", "esp:12", "orange", [] ],
+    [ "btn_sos:1.l", "esp:D12", "orange", [] ],
     [ "btn_sos:2.l", "esp:GND.2", "black", [] ],
 
-    [ "buz1:1", "esp:21", "purple", [] ],
+    [ "buz1:1", "esp:D21", "purple", [] ],
     [ "buz1:2", "esp:GND.2", "black", [] ]
   ],
   "serialMonitor": {
