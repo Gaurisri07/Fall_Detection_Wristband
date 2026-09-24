@@ -46,6 +46,13 @@
 // Use international format, e.g. "+919876543210".
 #define EMERGENCY_NUMBER  "+919876543210"   // ← SET THIS before deploying
 
+// ── Language Selector ─────────────────────────────────────────────────────────
+typedef enum {
+    LANG_EN = 0,   ///< English (default)
+    LANG_HI = 1,   ///< Hindi (हिन्दी)
+    LANG_TA = 2    ///< Tamil (தமிழ்)
+} GsmLanguage;
+
 // ── Return codes ─────────────────────────────────────────────────────────────
 typedef enum {
     GSM_OK            = 0,   ///< SMS queued / sent successfully
@@ -56,6 +63,17 @@ typedef enum {
 } GsmResult;
 
 // ── Public API — called by Person B's state machine ──────────────────────────
+
+/**
+ * @brief  Set active SMS language for alerts and SOS messages.
+ * @param  lang  LANG_EN, LANG_HI, or LANG_TA.
+ */
+void gsm_set_language(GsmLanguage lang);
+
+/**
+ * @brief  Get currently active SMS language.
+ */
+GsmLanguage gsm_get_language();
 
 /**
  * @brief  Power-on and initialise the SIM800L.

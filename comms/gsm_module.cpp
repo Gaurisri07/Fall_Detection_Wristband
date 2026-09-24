@@ -24,6 +24,65 @@
 // ── Module-private state ──────────────────────────────────────────────────────
 static bool g_gsm_ready   = false;
 static bool g_gsm_inited  = false;
+static GsmLanguage g_current_language = LANG_EN;
+
+void gsm_set_language(GsmLanguage lang) {
+    g_current_language = lang;
+}
+
+GsmLanguage gsm_get_language() {
+    return g_current_language;
+}
+
+// ── UTF-8 Multilingual SMS Templates ───────────────────────────────────────────
+
+// English (LANG_EN)
+static const char TEMPLATE_EN_SOS[] =
+    "*** SOS — MANUAL TRIGGER ***\n"
+    "The wearer has pressed the SOS button.\n"
+    "Time: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "Location: %s\n"
+    "Coordinates: %.6f, %.6f\n"
+    "-- FallGuard Wristband";
+
+static const char TEMPLATE_EN_FALL[] =
+    "FALL ALERT: Wearer may have fallen.\n"
+    "Time: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "Location: %s\n"
+    "Coordinates: %.6f, %.6f\n"
+    "-- FallGuard Wristband";
+
+// Hindi (LANG_HI — हिन्दी)
+static const char TEMPLATE_HI_SOS[] =
+    "*** आपातकालीन सूचना (SOS) — मैन्युअल अलर्ट ***\n"
+    "उपयोगकर्ता ने SOS बटन दबाया है।\n"
+    "समय: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "स्थान: %s\n"
+    "निर्देशांक: %.6f, %.6f\n"
+    "-- फॉलगार्ड रिस्टबैंड";
+
+static const char TEMPLATE_HI_FALL[] =
+    "गिरावट चेतावनी (FALL ALERT): उपयोगकर्ता गिर गया हो सकता है।\n"
+    "समय: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "स्थान: %s\n"
+    "निर्देशांक: %.6f, %.6f\n"
+    "-- फॉलगार्ड रिस्टबैंड";
+
+// Tamil (LANG_TA — தமிழ்)
+static const char TEMPLATE_TA_SOS[] =
+    "*** அவசர எச்சரிக்கை (SOS) — கைமுறை அறிவிப்பு ***\n"
+    "பயனர் SOS பொத்தானை அழுத்தியுள்ளார்.\n"
+    "நேரம்: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "இடம்: %s\n"
+    "ஆயத்தொலைவுகள்: %.6f, %.6f\n"
+    "-- ஃபால்கார்ட் மணிக்கட்டுக்கட்டு (FallGuard)";
+
+static const char TEMPLATE_TA_FALL[] =
+    "வீழ்ச்சி எச்சரிக்கை (FALL ALERT): பயனர் கீழே விழுந்திருக்கலாம்.\n"
+    "நேரம்: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
+    "இடம்: %s\n"
+    "ஆயத்தொலைவுகள்: %.6f, %.6f\n"
+    "-- ஃபால்கார்ட் மணிக்கட்டுக்கட்டு (FallGuard)";
 
 #if !GSM_STUB_MODE
 // AT command timeout
@@ -67,32 +126,26 @@ static void build_alert_sms(char* buf, size_t len, const GpsData& g, bool is_sos
     char map_url[120];
     gps_format_map_url(map_url, sizeof(map_url));
 
-    if (is_sos) {
-        snprintf(buf, len,
-            "*** SOS — MANUAL TRIGGER ***\n"
-            "The wearer has pressed the SOS button.\n"
-            "Time: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
-            "Location: %s\n"
-            "Coordinates: %.6f, %.6f\n"
-            "-- FallGuard Wristband",
-            g.hour, g.minute, g.second,
-            g.day, g.month, g.year,
-            map_url,
-            (double)g.latitude, (double)g.longitude
-        );
-    } else {
-        snprintf(buf, len,
-            "FALL ALERT: Wearer may have fallen.\n"
-            "Time: %02d:%02d:%02d UTC %02d/%02d/%04d\n"
-            "Location: %s\n"
-            "Coordinates: %.6f, %.6f\n"
-            "-- FallGuard Wristband",
-            g.hour, g.minute, g.second,
-            g.day, g.month, g.year,
-            map_url,
-            (double)g.latitude, (double)g.longitude
-        );
+    const char* fmt = nullptr;
+    switch (g_current_language) {
+        case LANG_HI:
+            fmt = is_sos ? TEMPLATE_HI_SOS : TEMPLATE_HI_FALL;
+            break;
+        case LANG_TA:
+            fmt = is_sos ? TEMPLATE_TA_SOS : TEMPLATE_TA_FALL;
+            break;
+        case LANG_EN:
+        default:
+            fmt = is_sos ? TEMPLATE_EN_SOS : TEMPLATE_EN_FALL;
+            break;
     }
+
+    snprintf(buf, len, fmt,
+        g.hour, g.minute, g.second,
+        g.day, g.month, g.year,
+        map_url,
+        (double)g.latitude, (double)g.longitude
+    );
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -168,7 +221,7 @@ bool gsm_is_ready() {
 GsmResult gsm_send_alert(const GpsData& gps_data) {
     if (!g_gsm_ready) return GSM_ERR_NOT_READY;
 
-    char message[512];
+    char message[768];
     build_alert_sms(message, sizeof(message), gps_data, false);
 
 #if GSM_STUB_MODE
@@ -215,7 +268,7 @@ GsmResult gsm_send_alert(const GpsData& gps_data) {
 GsmResult gsm_send_sos(const GpsData& gps_data) {
     if (!g_gsm_ready) return GSM_ERR_NOT_READY;
 
-    char message[512];
+    char message[768];
     build_alert_sms(message, sizeof(message), gps_data, true);
 
 #if GSM_STUB_MODE
