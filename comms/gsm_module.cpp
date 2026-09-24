@@ -172,16 +172,11 @@ GsmResult gsm_send_alert(const GpsData& gps_data) {
     build_alert_sms(message, sizeof(message), gps_data, false);
 
 #if GSM_STUB_MODE
-    // ── Phase 1: stub — log to Serial Monitor ─────────────────────────────────
-    Serial.println();
-    Serial.println("╔══════════════════════════════════════════╗");
-    Serial.println("║         [GSM STUB] SMS WOULD SEND        ║");
-    Serial.println("╠══════════════════════════════════════════╣");
-    Serial.print  ("║ TO: "); Serial.println(EMERGENCY_NUMBER);
-    Serial.println("║──────────────────────────────────────────║");
+    // ── Phase 1: stub — simulated AT+CMGS transmission to Serial Monitor ──────
+    Serial.printf("[SMS SIMULATED] >>> AT+CMGS=\"%s\"\n", EMERGENCY_NUMBER);
     Serial.println(message);
-    Serial.println("╚══════════════════════════════════════════╝");
-    Serial.println();
+    Serial.println("[SMS SIMULATED] > <Ctrl-Z> (0x1A)");
+    Serial.println("[SMS SIMULATED] <<< +CMGS: 1 OK (SMS delivered)");
     return GSM_OK;
 
 #else
@@ -224,15 +219,10 @@ GsmResult gsm_send_sos(const GpsData& gps_data) {
     build_alert_sms(message, sizeof(message), gps_data, true);
 
 #if GSM_STUB_MODE
-    Serial.println();
-    Serial.println("╔══════════════════════════════════════════╗");
-    Serial.println("║       [GSM STUB] SOS SMS WOULD SEND      ║");
-    Serial.println("╠══════════════════════════════════════════╣");
-    Serial.print  ("║ TO: "); Serial.println(EMERGENCY_NUMBER);
-    Serial.println("║──────────────────────────────────────────║");
+    Serial.printf("[SMS SIMULATED] >>> AT+CMGS=\"%s\"\n", EMERGENCY_NUMBER);
     Serial.println(message);
-    Serial.println("╚══════════════════════════════════════════╝");
-    Serial.println();
+    Serial.println("[SMS SIMULATED] > <Ctrl-Z> (0x1A)");
+    Serial.println("[SMS SIMULATED] <<< +CMGS: 1 OK (SMS delivered)");
     return GSM_OK;
 
 #else
